@@ -14,6 +14,15 @@ async function assignLesson({ title, description, listStudentsTo }) {
     };
 
     await firebaseRealtime.put(`/lessons/${lessonId}.json`, lesson);
+
+    for (const studentId of Object.keys(listStudentsTo)) {
+      await firebaseRealtime.put(
+        `/lessonStatus/${studentId}/${lessonId}.json`,
+        "pending",
+        { headers: { "Content-Type": "application/json" } }
+      );
+    }
+
     return {
       success: true,
       message: "Lesson assigned successfully",
