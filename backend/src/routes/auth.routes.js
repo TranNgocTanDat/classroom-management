@@ -7,9 +7,13 @@ const authController = require("../controllers/auth.controller");
 router.post("/login", authController.loginController);
 
 // POST /api/auth/loginStudent
-router.post("/loginStudent", authController.loginController);
+router.post("/loginStudent", authController.loginStudentController);
 
 // POST /api/auth/validate-access-code
 router.post("/validate-access-code", authController.validateAccessCodeController);
+
+// POST /api/auth/validate-access-code-student
+router.post("/validate-access-code-student", authController.validateAccessCodeStudentController);
+
 
 module.exports = router;

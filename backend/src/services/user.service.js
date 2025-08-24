@@ -114,4 +114,42 @@ async function addStudent({ name, phone, email }) {
   }
 }
 
-module.exports = { addUser, getUserByPhone, getAllUsers, addStudent, getUserByEmail};
+// Update student
+async function updateStudent(uid, updateData) {
+  try {
+    const response = await firebaseRealtime.get(`/users/${uid}.json`);
+    const existingUser = response.data;
+
+    if (!existingUser || existingUser.role !== "student") {
+      return { success: false, message: "Student not found." };
+    }
+
+    if (updateData.password) {
+      // Hash the new password
+      updateData.password = await bcrypt.hash(updateData.password, 10);
+    }
+
+    const updatedUser = {
+      ...existingUser,
+      ...updateData,
+    };
+    await firebaseRealtime.put(`/users/${uid}.json`, updatedUser);
+
+    return { success: true, message: "Student updated successfully.", user: { uid, ...updatedUser } };
+  } catch (error) {
+    console.error("Error updating student:", error);
+    throw error;
+  }
+}
+
+// delete student uid
+async function deleteStudent(uid) {
+  try {
+    await firebaseRealtime.delete(`/users/${uid}.json`);
+    return { success: true, message: "Student deleted successfully." };
+  } catch (error) {
+    console.error("Error deleting student:", error);
+    throw error;
+  }
+}
+module.exports = { addUser, getUserByPhone, getAllUsers, addStudent, getUserByEmail, updateStudent, deleteStudent};

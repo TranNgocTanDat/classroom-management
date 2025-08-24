@@ -3,6 +3,7 @@ const cors = require("cors");
 
 const userRoutes = require("./src/routes/user.routes");
 const authRoutes = require("./src/routes/auth.routes");
+const lessonRoutes = require("./src/routes/lesson.routes");
 
 const app = express();
 
@@ -14,5 +15,6 @@ app.use(express.urlencoded({ extended: true }));
 // Routes
 app.use("/api/users", userRoutes);
 app.use("/api/auth", authRoutes);
+app.use("/api/lessons", lessonRoutes);
 
 module.exports = app;   

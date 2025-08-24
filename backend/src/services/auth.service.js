@@ -103,26 +103,25 @@ async function validateAccessCode(phone, code) {
   }
 }
 
+function encodeKey(str) {
+  return str.replace(/\./g, "_");  // đổi "." thành "_"
+}
+
 //create code student
 async function createAccessCodeStudent(email, user) {
   try {
     // generate random code
     const accessCode = crypto.randomInt(100000, 999999).toString();
 
+    const safeKey = encodeKey(email);
+
     // save code to firebase
-    await firebaseRealtime.put(`/accessCodes/${phone}.json`, {
+    await firebaseRealtime.put(`/accessCodes/${safeKey}.json`, {
       code: accessCode,
       createdAt: new Date().toISOString(),
     });
 
-    // // send code via SMS
-    // await twilioClient.messages.create({
-    //   body: `Your verification code is: ${accessCode}`,
-    //   from: process.env.TWILIO_PHONE_NUMBER,
-    //   to: phone,
-    // });
-
-    // send code via email
+    // send code email
     await sendEmail(
       user.email,
       "Your verification code",
@@ -138,8 +137,10 @@ async function createAccessCodeStudent(email, user) {
 // validate access code sutdent
 async function validateAccessCodeStudent(email, code) {
   try {
+    const safeKey = encodeKey(email);
+
     // get code from firebase
-    const response = await firebaseRealtime.get(`/accessCodes/${phone}.json`);
+    const response = await firebaseRealtime.get(`/accessCodes/${safeKey}.json`);
     const accessCodeData = response.data;
 
     if (!accessCodeData || accessCodeData.code !== code) {
@@ -147,13 +148,13 @@ async function validateAccessCodeStudent(email, code) {
     }
 
     // check if user exists
-    const user = await getUserByPhone(phone);
+    const user = await getUserByEmail(email);
     if (!user) {
       return { success: false, message: "User not found" };
     }
 
     // delete code after validation
-    await firebaseRealtime.delete(`/accessCodes/${phone}.json`);
+    await firebaseRealtime.delete(`/accessCodes/${safeKey}.json`);
 
     return { success: true, message: "Code validated successfully", user };
   } catch (error) {
@@ -167,7 +168,9 @@ async function loginStudent(email, password) {
   try {
     // get user by email
     const user = await getUserByEmail(email);
+    console.log("User found:", user);
     if (!user) {
+      console.log("User found:", user);
       return { success: false, message: "User not found" };
     }
 
@@ -177,8 +180,8 @@ async function loginStudent(email, password) {
       return { success: false, message: "Invalid password" };
     }
 
-    // sms verification
-    const accessCode = await createAccessCode(user.phone, user);
+    // create access code
+    const accessCode = await createAccessCodeStudent(email, user);
     if (!accessCode.success) {
       return { success: false, message: "Failed to send verification code" };
     }
@@ -195,4 +198,4 @@ async function loginStudent(email, password) {
 }
 
 
-module.exports = { login, loginStudent, createAccessCode, validateAccessCode };
+module.exports = { login, loginStudent, createAccessCode, validateAccessCode, createAccessCodeStudent, validateAccessCodeStudent };
