@@ -1,15 +1,26 @@
-function checkIntructor(req, res, next) {
-  const role = req.headers["x-user-role"];
-  const phone = req.headers["x-user-phone"];
-  if (!role || !phone) {
-    return res.status(401).json({ message: "Unauthorized" });
-  }
-  if (role !== "instructor") {
-    return res.status(403).json({ success: false, message: "Access denied" });
-  }
+const { verifyToken } = require("../helpers/jwt");
 
-  req.user = { phone, role };
-  next();
-}
+const authMiddleware = (allowedRoles = []) => {
+  return (req, res, next) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader?.startsWith("Bearer ")) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
 
-module.exports = checkIntructor;
+    const token = authHeader.split(" ")[1];
+    try {
+      const decoded = verifyToken(token);
+      req.user = decoded; // { uid, role }
+
+      if (allowedRoles.length && !allowedRoles.includes(decoded.role)) {
+        return res.status(403).json({ error: "Forbidden" });
+      }
+
+      next();
+    } catch (err) {
+      return res.status(403).json({ error: "Invalid or expired token" });
+    }
+  };
+};
+
+module.exports = authMiddleware;

@@ -1,13 +1,13 @@
 const express = require("express");
 const studentController = require("../controllers/student.controller");
-const checkIntructor = require("../middleware/checkAuth");
+const authMiddleware = require("../middleware/checkAuth");
 
 const router = express.Router();
 
 // GET /api/students
-router.get("/", checkIntructor, studentController.getStudentsWithLessonsController);
+router.get("/", authMiddleware, studentController.getStudentsWithLessonsController);
 
 // GET /api/students/:uid
-router.get("/:uid", checkIntructor, studentController.getStudentDetailController);
+router.get("/:uid", authMiddleware, studentController.getStudentDetailController);
 
 module.exports = router;

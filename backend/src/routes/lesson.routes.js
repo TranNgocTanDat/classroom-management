@@ -1,13 +1,13 @@
 const express = require("express");
 const lessonController = require("../controllers/lesson.controller");
-const checkIntructor = require("../middleware/checkAuth");
+const authMiddleware = require("../middleware/checkAuth");
 
 const router = express.Router();
 
 // POST /api/lessons
-router.post("/", checkIntructor, lessonController.assignLessonController);
+router.post("/", authMiddleware, lessonController.assignLessonController);
 
 // GET /api/lessons
-router.get("/", checkIntructor, lessonController.getLessonsController);
+router.get("/", authMiddleware, lessonController.getLessonsController);
 
 module.exports = router;

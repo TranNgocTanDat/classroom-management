@@ -5,6 +5,7 @@ const crypto = require("crypto");
 // const twilio = require("twilio");
 const bcrypt = require("bcryptjs");
 const { sendEmail } = require("../config/email");
+const { generateToken } = require("../helpers/jwt");
 
 // // setup twilio client
 // const twilioClient = twilio(
@@ -96,7 +97,15 @@ async function validateAccessCode(phone, code) {
     // delete code after validation
     await firebaseRealtime.delete(`/accessCodes/${phone}.json`);
 
-    return { success: true, message: "Code validated successfully", user };
+    // generate JWT token
+    const token = generateToken(user);
+
+    return {
+      success: true,
+      message: "Code validated successfully",
+      user,
+      token,
+    };
   } catch (error) {
     console.error("Error validating access code:", error);
     throw error;
@@ -104,7 +113,7 @@ async function validateAccessCode(phone, code) {
 }
 
 function encodeKey(str) {
-  return str.replace(/\./g, "_");  // đổi "." thành "_"
+  return str.replace(/\./g, "_"); // đổi "." thành "_"
 }
 
 //create code student
@@ -156,7 +165,15 @@ async function validateAccessCodeStudent(email, code) {
     // delete code after validation
     await firebaseRealtime.delete(`/accessCodes/${safeKey}.json`);
 
-    return { success: true, message: "Code validated successfully", user };
+    //generate JWT token
+    const token = generateToken(user);
+
+    return {
+      success: true,
+      message: "Code validated successfully",
+      user,
+      token,
+    };
   } catch (error) {
     console.error("Error validating access code:", error);
     throw error;
@@ -197,5 +214,11 @@ async function loginStudent(email, password) {
   }
 }
 
-
-module.exports = { login, loginStudent, createAccessCode, validateAccessCode, createAccessCodeStudent, validateAccessCodeStudent };
+module.exports = {
+  login,
+  loginStudent,
+  createAccessCode,
+  validateAccessCode,
+  createAccessCodeStudent,
+  validateAccessCodeStudent,
+};
